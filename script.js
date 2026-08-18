@@ -5,6 +5,8 @@ const divider = document.getElementById('divider');
 const main = document.getElementById('main');
 const copyBtn = document.getElementById('copyBtn');
 const sampleBtn = document.getElementById('sampleBtn');
+const uploadBtn = document.getElementById('uploadBtn');
+const fileInput = document.getElementById('fileInput');
 
 /* ---------- rendering logic ---------- */
 
@@ -143,6 +145,54 @@ sampleBtn.addEventListener('click', () => {
     mentor: null
   }, null, 2);
   render();
+});
+
+/* ---------- file upload ---------- */
+
+function readJsonFile(file) {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    input.value = e.target.result;
+    render();
+  };
+  reader.readAsText(file);
+  fileInput.value = '';
+}
+
+uploadBtn.addEventListener('click', () => {
+  fileInput.click();
+});
+
+fileInput.addEventListener('change', (e) => {
+  if (e.target.files.length > 0) {
+    readJsonFile(e.target.files[0]);
+  }
+});
+
+/* ---------- drag and drop ---------- */
+
+input.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  input.classList.add('drag-over');
+});
+
+input.addEventListener('dragleave', (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  input.classList.remove('drag-over');
+});
+
+input.addEventListener('drop', (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  input.classList.remove('drag-over');
+  if (e.dataTransfer.files.length > 0) {
+    const file = e.dataTransfer.files[0];
+    if (file.type === 'application/json' || file.name.endsWith('.json')) {
+      readJsonFile(file);
+    }
+  }
 });
 
 /* ---------- draggable divider (resize the two panes) ---------- */
