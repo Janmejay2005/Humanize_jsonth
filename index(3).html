@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Humanize — JSON, plainly</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <h1>Human<span>ize</span></h1>
+    <div class="sub">json → plain english, live</div>
+  </div>
+  <div class="stats" id="stats"></div>
+</header>
+
+<main id="main">
+  <div class="pane">
+    <div class="pane-head">
+      <span>Raw JSON</span>
+      <button id="sampleBtn">Load sample</button>
+    </div>
+    <textarea id="input" spellcheck="false" placeholder='Paste JSON here, e.g.
+
+{
+  &quot;name&quot;: &quot;Janmejay&quot;,
+  &quot;role&quot;: &quot;Vice President, Odyssey&quot;,
+  &quot;active&quot;: true,
+  &quot;skills&quot;: [&quot;Python&quot;, &quot;React&quot;, &quot;FastAPI&quot;]
+}'></textarea>
+  </div>
+
+  <div class="divider" id="divider"><div class="handle">⋮</div></div>
+
+  <div class="pane">
+    <div class="pane-head">
+      <span>Readable</span>
+      <button id="copyBtn">Copy summary</button>
+    </div>
+    <div class="output" id="output"></div>
+  </div>
+</main>
+
+<script src="script.js"></script>
+</body>
+</html>
