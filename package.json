@@ -1,0 +1,10 @@
+{
+  "name": "humanize-jsonth",
+  "version": "2.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "check": "node --check script.js && node --check json-utils.js"
+  }
+}

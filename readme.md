@@ -157,3 +157,13 @@ For issues, feature requests, or improvements, feel free to reach out!
 **Version**: 2.0  
 **Last Updated**: 2026-08-18  
 **Built with**: HTML, CSS, JavaScript (Vanilla)
+
+## Local checks
+
+This remains a static browser application. Node.js is only needed for the optional
+development checks:
+
+```bash
+npm test
+npm run check
+```
