@@ -1,3 +1,5 @@
+import { typeOf, humanKey, escapeHtml, countNodes } from './json-utils.js';
+
 const input = document.getElementById('input');
 const output = document.getElementById('output');
 const stats = document.getElementById('stats');
@@ -9,23 +11,6 @@ const uploadBtn = document.getElementById('uploadBtn');
 const fileInput = document.getElementById('fileInput');
 
 /* ---------- rendering logic ---------- */
-
-function typeOf(v){
-  if(v === null) return 'null';
-  if(Array.isArray(v)) return 'array';
-  return typeof v;
-}
-
-function humanKey(k){
-  return k
-    .replace(/_/g,' ')
-    .replace(/([a-z0-9])([A-Z])/g,'$1 $2')
-    .toLowerCase();
-}
-
-function escapeHtml(s){
-  return String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
-}
 
 function renderValue(v){
   const t = typeOf(v);
@@ -46,7 +31,7 @@ function renderNode(key, value, depth){
   let html = '';
 
   if(t === 'object' || t === 'array'){
-    html += `<div class="row"><span class="key">${key !== null ? humanKey(key) : ''}</span>${describeCollection(t, value)}</div>`;
+    html += `<div class="row"><span class="key">${key !== null ? escapeHtml(humanKey(key)) : ''}</span>${describeCollection(t, value)}</div>`;
     html += `<div class="indent">`;
     if(t === 'array'){
       value.forEach((item, i) => {
@@ -62,7 +47,7 @@ function renderNode(key, value, depth){
     }
     html += `</div>`;
   } else {
-    html += `<div class="row"><span class="key">${humanKey(key)}</span>${renderValue(value)}</div>`;
+    html += `<div class="row"><span class="key">${key === null ? 'value' : escapeHtml(humanKey(key))}</span>${renderValue(value)}</div>`;
   }
   return html;
 }
@@ -72,25 +57,13 @@ function buildSummary(data){
   let s = `<div class="section-title">In one line</div>`;
   if(t === 'object'){
     const keys = Object.keys(data);
-    s += `<div class="sentence">This is a record with <span class="n">${keys.length}</span> field${keys.length===1?'':'s'}: <b>${keys.map(humanKey).join('</b>, <b>')}</b>.</div>`;
+    s += `<div class="sentence">This is a record with <span class="n">${keys.length}</span> field${keys.length===1?'':'s'}: <b>${keys.map(k => escapeHtml(humanKey(k))).join('</b>, <b>')}</b>.</div>`;
   } else if(t === 'array'){
     s += `<div class="sentence">This is a list of <span class="n">${data.length}</span> item${data.length===1?'':'s'}.</div>`;
   } else {
     s += `<div class="sentence">This is a single ${t} value: ${renderValue(data)}.</div>`;
   }
   return s;
-}
-
-function countNodes(data){
-  let leaves = 0, groups = 0, lists = 0;
-  function walk(v){
-    const t = typeOf(v);
-    if(t === 'object'){ groups++; Object.values(v).forEach(walk); }
-    else if(t === 'array'){ lists++; v.forEach(walk); }
-    else leaves++;
-  }
-  walk(data);
-  return {leaves, groups, lists};
 }
 
 function render(){
@@ -124,9 +97,17 @@ input.addEventListener('input', render);
 
 copyBtn.addEventListener('click', () => {
   const text = output.innerText;
+  if (!navigator.clipboard) {
+    copyBtn.textContent = 'clipboard unavailable';
+    setTimeout(() => copyBtn.textContent = 'Copy summary', 1600);
+    return;
+  }
   navigator.clipboard.writeText(text).then(() => {
     copyBtn.textContent = 'copied';
     setTimeout(() => copyBtn.textContent = 'Copy summary', 1200);
+  }).catch(() => {
+    copyBtn.textContent = 'copy failed';
+    setTimeout(() => copyBtn.textContent = 'Copy summary', 1600);
   });
 });
 
@@ -150,10 +131,17 @@ sampleBtn.addEventListener('click', () => {
 /* ---------- file upload ---------- */
 
 function readJsonFile(file) {
+  if (!file || (file.type !== 'application/json' && !file.name.toLowerCase().endsWith('.json'))) {
+    output.innerHTML = '<div class="error-box">Please choose a JSON file.</div>';
+    return;
+  }
   const reader = new FileReader();
   reader.onload = (e) => {
     input.value = e.target.result;
     render();
+  };
+  reader.onerror = () => {
+    output.innerHTML = '<div class="error-box">The file could not be read.</div>';
   };
   reader.readAsText(file);
   fileInput.value = '';
@@ -189,9 +177,7 @@ input.addEventListener('drop', (e) => {
   input.classList.remove('drag-over');
   if (e.dataTransfer.files.length > 0) {
     const file = e.dataTransfer.files[0];
-    if (file.type === 'application/json' || file.name.endsWith('.json')) {
-      readJsonFile(file);
-    }
+    readJsonFile(file);
   }
 });
 
